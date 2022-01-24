@@ -61,7 +61,10 @@ class Matrix(object):
             raise(NotImplementedError, "Calculating determinant not implemented for matrices largerer than 2x2.")
         
         # TODO - your code here
-        return (self.g[0][0] * self.g[1][1]) - (self.g[1][0] * self.g[0][1])      # Passed  
+        if self.h == 1:
+            return self[0][0]
+        else:
+            return (self.g[0][0] * self.g[1][1]) - (self.g[1][0] * self.g[0][1])      # Passed  
      
 
     def trace(self):
@@ -295,16 +298,16 @@ class Matrix(object):
             pass
             #   
             # TODO - your code here
-        result = []
-                
-        for i in range(self.h):
-            row = []
-            new_row = []
-            for j in range(self.w):
-                temp = other * self.g[i][j]
-                row.append(temp)
-            result.append(row)                 
-        return Matrix(result) # Passed
+            result = []
+                    
+            for i in range(self.h):
+                row = []
+                new_row = []
+                for j in range(self.w):
+                    temp = other * self.g[i][j]
+                    row.append(temp)
+                result.append(row)                 
+            return Matrix(result) # Passed
     
     
     
