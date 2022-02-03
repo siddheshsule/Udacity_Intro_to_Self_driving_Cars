@@ -37,6 +37,22 @@ vector< vector<float> > normalize(vector< vector <float> > grid) {
 	vector< vector<float> > newGrid;
 
 	// todo - your code here
+	float sum = 0;
+	for(int i=0;i<grid.size(); ++i){
+		for(int j=0;j<grid[0].size();++j){
+			sum+=grid[i][j];			
+		}
+	}
+
+	vector<float> row;
+	for(int i=0;i<grid.size(); ++i){
+		row.clear();
+		for(int j=0;j<grid[i].size();++j){
+			row.push_back((grid[i][j])/sum);		
+		}
+		newGrid.push_back(row);
+	}
+
 
 	return newGrid;
 }
@@ -76,10 +92,49 @@ vector< vector<float> > normalize(vector< vector <float> > grid) {
 */
 vector < vector <float> > blur(vector < vector < float> > grid, float blurring) {
 
-	vector < vector <float> > newGrid;
 	
 	// your code here
+	int height = grid.size();
+	int width = grid[0].size();
+	vector < vector <float> > newGrid = zeros(height, width);
 
+	float center_prob = 1.0 - blurring;
+	float corner_prob = blurring / 12.0;
+    float adjacent_prob = blurring / 6.0;
+
+	vector<vector <float>>window = {
+		{corner_prob,  adjacent_prob,  corner_prob},
+        {adjacent_prob, center_prob,  adjacent_prob},
+        {corner_prob,  adjacent_prob,  corner_prob}
+	};
+
+	
+	// vector<float> row;
+	// for(int i=0; i<height; i++){
+	// 	row = {};
+	// 	for(int j=0; j<width;j++){
+	// 		row.push_back(0.0);
+	// 	}
+	// 	newGrid.push_back(row);
+	// }
+
+
+
+	for(int i=0; i<height; i++){
+		vector<float> rows;
+		for(int j=0; j<width; j++){
+			float grid_val = grid[i][j];
+			for(int dx= -1; dx<2; dx++){
+				for(int dy=-1; dy<2;dy++){
+					float mult = window[dx + 1][dy + 1];
+					//(num - divisor * (num / divisor))....Logic to avoid % operator (Python modulo) 
+					float new_i = (i + dy + height) % height;
+					float new_j = (j + dx + width) % width;
+					newGrid[new_i][new_j] += mult * grid_val;
+				}
+			}
+		}
+	}
 	return normalize(newGrid);
 }
 

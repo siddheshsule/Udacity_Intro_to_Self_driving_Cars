@@ -21,7 +21,7 @@ using namespace std;
 /**
 	TODO - implement this function 
     
-    Initializes a grid of beliefs to a uniform distribution. 
+    Initializes a grid of newGrid to a uniform distribution. 
 
     @param grid - a two dimensional grid map (vector of vectors 
     	   of chars) representing the robot's world. For example:
@@ -42,25 +42,40 @@ using namespace std;
 vector< vector <float> > initialize_beliefs(vector< vector <char> > grid) {
 	vector< vector <float> > newGrid;
 
+
 	// your code here
-	
+	// vector<vector<char>> grid;
+	int height = grid.size();
+	int width = grid[0].size();
+	int area = height * width;
+
+	float belief_per_cell = 1.0 /area;	
+
+	vector<float> row;
+	for(int i = 0; i<height; i++){
+		row = {};
+		for(int j = 0; j<width;j++){
+			row.push_back(belief_per_cell);
+		}
+		newGrid.push_back(row);
+	}	
 	return newGrid;
 }
 
 /**
   TODO - implement this function 
     
-    Implements robot motion by updating beliefs based on the 
+    Implements robot motion by updating newGrid based on the 
     intended dx and dy of the robot. 
 
-    For example, if a localized robot with the following beliefs
+    For example, if a localized robot with the following newGrid
 
     0.00  0.00  0.00
     0.00  1.00  0.00
     0.00  0.00  0.00 
 
     and dx and dy are both 1 and blurring is 0 (noiseless motion),
-    than after calling this function the returned beliefs would be
+    than after calling this function the returned newGrid would be
 
     0.00  0.00  0.00
     0.00  0.00  0.00
@@ -70,10 +85,10 @@ vector< vector <float> > initialize_beliefs(vector< vector <char> > grid) {
 
   @param dx - the intended change in x position of the robot
 
-    @param beliefs - a two dimensional grid of floats representing
-         the robot's beliefs for each cell before sensing. For 
+    @param newGrid - a two dimensional grid of floats representing
+         the robot's newGrid for each cell before sensing. For 
          example, a robot which has almost certainly localized 
-         itself in a 2D world might have the following beliefs:
+         itself in a 2D world might have the following newGrid:
 
          0.01 0.98
          0.00 0.01
@@ -82,25 +97,42 @@ vector< vector <float> > initialize_beliefs(vector< vector <char> > grid) {
            is. If blurring = 0.0 then motion is noiseless.
 
     @return - a normalized two dimensional grid of floats 
-         representing the updated beliefs for the robot. 
+         representing the updated newGrid for the robot. 
 */
 vector< vector <float> > move(int dy, int dx, 
-  vector < vector <float> > beliefs,
+  vector < vector <float> > newGrid,
   float blurring) 
 {
-
-  vector < vector <float> > newGrid;
-
   // your code here
+  float height = newGrid.size();
+  float width = newGrid[0].size();
 
-  return blur(newGrid, blurring);
+  vector<vector<float>> new_G;
+  vector<float> new_row;
+  for(int i=0; i<width; i++){
+	  new_row = {};
+	  for(int j=0; j<height;j++){
+		  new_row.push_back(0.0);
+	  }
+	  new_G.push_back(new_row);
+  }
+
+  for(int i=0; i<height; i++){
+	  for(int j=0; j<newGrid[i].size(); j++){
+		  //(num - divisor * (num / divisor))....Logic to avoid % operator (Python modulo) 
+		  float new_i = fmod((i + dy), height);
+		  float new_j = fmod((j + dx), width);
+		  new_G[new_i][new_j] = newGrid[i][j];
+	  }
+  }
+  return blur(new_G, blurring);
 }
 
 
 /**
 	TODO - implement this function 
     
-    Implements robot sensing by updating beliefs based on the 
+    Implements robot sensing by updating newGrid based on the 
     color of a sensor measurement 
 
 	@param color - the color the robot has sensed at its location
@@ -113,10 +145,10 @@ vector< vector <float> > move(int dy, int dx,
     	   g r g
     	   g g g
 
-   	@param beliefs - a two dimensional grid of floats representing
-   		   the robot's beliefs for each cell before sensing. For 
+   	@param newGrid - a two dimensional grid of floats representing
+   		   the robot's newGrid for each cell before sensing. For 
    		   example, a robot which has almost certainly localized 
-   		   itself in a 2D world might have the following beliefs:
+   		   itself in a 2D world might have the following newGrid:
 
    		   0.01 0.98
    		   0.00 0.01
@@ -132,17 +164,29 @@ vector< vector <float> > move(int dy, int dx,
     	   an incorrect one.
 
     @return - a normalized two dimensional grid of floats 
-    	   representing the updated beliefs for the robot. 
+    	   representing the updated newGrid for the robot. 
 */
 vector< vector <float> > sense(char color, 
 	vector< vector <char> > grid, 
-	vector< vector <float> > beliefs, 
+	vector< vector <float> > newGrid, 
 	float p_hit,
 	float p_miss) 
 {
-	vector< vector <float> > newGrid;
-
+	
 	// your code here
-
-	return normalize(newGrid);
+	vector<vector<float >> new_G;
+	vector<float> row;
+	for(int i =0; i < grid.size(); ++i){
+		row.clear();
+		for(int j=0; j<grid[0].size();++j){
+			if(grid[i][j] == color){
+				row.push_back(newGrid[i][j] * p_hit);
+			}
+			else{
+				row.push_back(newGrid[i][j] * p_miss);
+			}
+		}
+		new_G.push_back(row);
+	}
+	return normalize(new_G);
 }
